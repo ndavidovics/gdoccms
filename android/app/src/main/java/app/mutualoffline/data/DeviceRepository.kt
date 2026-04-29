@@ -2,7 +2,6 @@ package app.mutualoffline.data
 
 import android.content.Context
 import android.os.Build
-import app.mutualoffline.BuildConfig
 import app.mutualoffline.api.ApiService
 import app.mutualoffline.api.Device
 import app.mutualoffline.api.DeviceRegisterRequest
@@ -27,14 +26,15 @@ class DeviceRepository(
     suspend fun registerCurrentDevice(): Device {
         val uuid = ensureDeviceUuid()
         val deviceName = "${Build.MANUFACTURER} ${Build.MODEL}".trim()
+        val versionName = runCatching {
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "1.0.0"
+        }.getOrDefault("1.0.0")
         val response = api.registerDevice(
             DeviceRegisterRequest(
                 deviceUuid = uuid,
                 platform = "android",
                 deviceName = deviceName,
-                appVersion = BuildConfig::class.java
-                    .runCatching { getDeclaredField("VERSION_NAME").get(null) as String }
-                    .getOrDefault("1.0.0"),
+                appVersion = versionName,
                 pushToken = null,
             )
         )
