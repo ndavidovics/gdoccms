@@ -39,7 +39,7 @@ struct HomeView: View {
                 }
             }
         }
-        .navigationTitle("Mutual Offline")
+        .navigationTitle("JustYouTime")
         .sheet(isPresented: $showScanner) {
             NavigationStack {
                 QRScannerView { payload in

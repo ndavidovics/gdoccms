@@ -105,7 +105,7 @@ class LocalVpnService : VpnService() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Mutual Offline VPN",
+                "JustYouTime VPN",
                 NotificationManager.IMPORTANCE_LOW,
             )
             nm.createNotificationChannel(channel)
@@ -118,7 +118,7 @@ class LocalVpnService : VpnService() {
         )
         val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_sys_vpn_ic)
-            .setContentTitle("MutualOffline session active")
+            .setContentTitle("JustYouTime session active")
             .setContentText("Network is being tunneled and dropped.")
             .setOngoing(true)
             .setContentIntent(pi)
@@ -138,7 +138,7 @@ class LocalVpnService : VpnService() {
     }
 
     companion object {
-        private const val SESSION_NAME = "MutualOffline"
+        private const val SESSION_NAME = "JustYouTime"
         private const val LOCAL_TUNNEL_ADDRESS = "10.0.0.2"
         private const val CHANNEL_ID = "mutual_offline_vpn"
         private const val NOTIFICATION_ID = 1011

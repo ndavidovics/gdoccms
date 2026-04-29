@@ -114,7 +114,7 @@ class HeartbeatForegroundService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Mutual Offline Heartbeat",
+                "JustYouTime Heartbeat",
                 NotificationManager.IMPORTANCE_LOW,
             )
             nm.createNotificationChannel(channel)

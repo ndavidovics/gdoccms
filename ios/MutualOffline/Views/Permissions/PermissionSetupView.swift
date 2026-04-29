@@ -8,13 +8,13 @@ struct PermissionSetupView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            Text("Set up Mutual Offline")
+            Text("Set up JustYouTime")
                 .font(.title.bold())
 
             VStack(alignment: .leading, spacing: 12) {
                 Label("Install VPN profile", systemImage: "network")
                     .font(.headline)
-                Text("Mutual Offline uses an on-device VPN profile to block network traffic during a session. iOS will prompt you to allow it.")
+                Text("JustYouTime uses an on-device VPN profile to block network traffic during a session. iOS will prompt you to allow it.")
                     .foregroundStyle(.secondary)
             }
 

@@ -42,10 +42,10 @@ public final class IOSVpnProtectionService: ProtectionService {
         let managers = try await NETunnelProviderManager.loadAllFromPreferences()
         if let existing = managers.first { return existing }
         let manager = NETunnelProviderManager()
-        manager.localizedDescription = "Mutual Offline"
+        manager.localizedDescription = "JustYouTime"
         let proto = NETunnelProviderProtocol()
         proto.providerBundleIdentifier = "com.mutualoffline.app.tunnel"
-        proto.serverAddress = "MutualOffline"
+        proto.serverAddress = "JustYouTime"
         manager.protocolConfiguration = proto
         manager.isEnabled = true
         return manager

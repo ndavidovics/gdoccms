@@ -24,7 +24,7 @@ fun PermissionSetupScreen(
     ) {
         Text("Set up protections")
         Text(
-            "MutualOffline uses a local VPN to drop network traffic during a " +
+            "JustYouTime uses a local VPN to drop network traffic during a " +
                 "session and Do Not Disturb to silence notifications. None of " +
                 "this is impossible to bypass — your partner sees the state via " +
                 "heartbeats."

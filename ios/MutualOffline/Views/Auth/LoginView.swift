@@ -43,7 +43,7 @@ struct LoginView: View {
                 }
             }
         }
-        .navigationTitle("Mutual Offline")
+        .navigationTitle("JustYouTime")
     }
 }
 
