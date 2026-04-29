@@ -148,12 +148,11 @@ final class SessionService: ObservableObject {
     private func startPolling() {
         stopPolling()
         guard let uuid = session?.uuid else { return }
-        pollTask = Task { [weak self] in
+        pollTask = Task { @MainActor [weak self] in
             while !Task.isCancelled {
                 try? await Task.sleep(nanoseconds: UInt64(APIConfig.sessionPollInterval * 1_000_000_000))
                 guard let self else { return }
-                let current = await MainActor.run { self.session }
-                guard let s = current, s.uuid == uuid, !s.state.isTerminal, s.state != .active else { return }
+                guard let s = self.session, s.uuid == uuid, !s.state.isTerminal, s.state != .active else { return }
                 do {
                     let res = try await self.api.getSession(uuid: uuid)
                     await self.applyState(res.session)

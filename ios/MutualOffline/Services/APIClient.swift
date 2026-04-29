@@ -85,14 +85,11 @@ final class APIClient {
     private func request<T: Decodable>(
         _ path: String,
         method: String = "GET",
-        body: Encodable? = nil,
+        bodyData: Data? = nil,
         authenticated: Bool = true
     ) async throws -> T {
-        guard var components = URLComponents(url: APIConfig.apiRoot.appendingPathComponent(path), resolvingAgainstBaseURL: false) else {
-            throw APIError.invalidURL
-        }
-        components.path = APIConfig.apiRoot.path + "/" + path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
-        guard let url = components.url else { throw APIError.invalidURL }
+        let trimmed = path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        let url = APIConfig.apiRoot.appendingPathComponent(trimmed)
 
         var req = URLRequest(url: url)
         req.httpMethod = method
@@ -101,8 +98,8 @@ final class APIClient {
         if authenticated, let token {
             req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
-        if let body {
-            req.httpBody = try encoder.encode(AnyEncodable(body))
+        if let bodyData {
+            req.httpBody = bodyData
         }
 
         let data: Data
@@ -133,6 +130,11 @@ final class APIClient {
 
     private struct ErrorPayload: Decodable { let message: String? }
 
+    private func send<B: Encodable, T: Decodable>(_ path: String, method: String, body: B, authenticated: Bool = true) async throws -> T {
+        let data = try encoder.encode(body)
+        return try await request(path, method: method, bodyData: data, authenticated: authenticated)
+    }
+
     // MARK: - Auth
 
     func register(name: String, email: String, password: String) async throws -> AuthResponse {
@@ -142,16 +144,16 @@ final class APIClient {
             let password: String
             let password_confirmation: String
         }
-        return try await request("register", method: "POST", body: Body(name: name, email: email, password: password, password_confirmation: password), authenticated: false)
+        return try await send("register", method: "POST", body: Body(name: name, email: email, password: password, password_confirmation: password), authenticated: false)
     }
 
     func login(email: String, password: String) async throws -> AuthResponse {
         struct Body: Encodable { let email: String; let password: String }
-        return try await request("login", method: "POST", body: Body(email: email, password: password), authenticated: false)
+        return try await send("login", method: "POST", body: Body(email: email, password: password), authenticated: false)
     }
 
     func logout() async throws {
-        let _: OKResponse = try await request("logout", method: "POST", body: EmptyBody())
+        let _: OKResponse = try await send("logout", method: "POST", body: EmptyBody())
     }
 
     func me() async throws -> MeResponse {
@@ -168,7 +170,7 @@ final class APIClient {
             let app_version: String
             let push_token: String?
         }
-        return try await request(
+        return try await send(
             "devices/register",
             method: "POST",
             body: Body(
@@ -186,38 +188,38 @@ final class APIClient {
     }
 
     func revokeDevice() async throws {
-        let _: OKResponse = try await request("devices/revoke", method: "POST", body: EmptyBody())
+        let _: OKResponse = try await send("devices/revoke", method: "POST", body: EmptyBody())
     }
 
     // MARK: - Sessions
 
     func createSession() async throws -> CreateSessionResponse {
-        try await request("sessions", method: "POST", body: EmptyBody())
+        try await send("sessions", method: "POST", body: EmptyBody())
     }
 
     func joinSession(token: String) async throws -> SessionEnvelope {
         struct Body: Encodable { let join_token: String }
-        return try await request("sessions/join", method: "POST", body: Body(join_token: token))
+        return try await send("sessions/join", method: "POST", body: Body(join_token: token))
     }
 
     func confirmLock(uuid: String) async throws -> SessionEnvelope {
-        try await request("sessions/\(uuid)/confirm-lock", method: "POST", body: EmptyBody())
+        try await send("sessions/\(uuid)/confirm-lock", method: "POST", body: EmptyBody())
     }
 
     func sendHeartbeat(uuid: String, payload: HeartbeatPayload) async throws -> SessionEnvelope {
-        try await request("sessions/\(uuid)/heartbeat", method: "POST", body: payload)
+        try await send("sessions/\(uuid)/heartbeat", method: "POST", body: payload)
     }
 
     func requestEnd(uuid: String) async throws -> SessionEnvelope {
-        try await request("sessions/\(uuid)/request-end", method: "POST", body: EmptyBody())
+        try await send("sessions/\(uuid)/request-end", method: "POST", body: EmptyBody())
     }
 
     func confirmEnd(uuid: String) async throws -> SessionEnvelope {
-        try await request("sessions/\(uuid)/confirm-end", method: "POST", body: EmptyBody())
+        try await send("sessions/\(uuid)/confirm-end", method: "POST", body: EmptyBody())
     }
 
     func emergencyExit(uuid: String) async throws -> SessionEnvelope {
-        try await request("sessions/\(uuid)/emergency-exit", method: "POST", body: EmptyBody())
+        try await send("sessions/\(uuid)/emergency-exit", method: "POST", body: EmptyBody())
     }
 
     func getSession(uuid: String) async throws -> SessionEnvelope {
@@ -232,7 +234,7 @@ final class APIClient {
 
     func syncContacts(hashes: [String]) async throws -> ContactsSyncResponse {
         struct Body: Encodable { let hashes: [String] }
-        return try await request("contacts/sync", method: "POST", body: Body(hashes: hashes))
+        return try await send("contacts/sync", method: "POST", body: Body(hashes: hashes))
     }
 
     func contactMatches() async throws -> ContactsSyncResponse {
@@ -241,15 +243,15 @@ final class APIClient {
 
     func friendRequest(userId: Int) async throws -> FriendResponse {
         struct Body: Encodable { let user_id: Int }
-        return try await request("friends/request", method: "POST", body: Body(user_id: userId))
+        return try await send("friends/request", method: "POST", body: Body(user_id: userId))
     }
 
     func acceptFriend(id: Int) async throws -> FriendResponse {
-        try await request("friends/\(id)/accept", method: "POST", body: EmptyBody())
+        try await send("friends/\(id)/accept", method: "POST", body: EmptyBody())
     }
 
     func rejectFriend(id: Int) async throws -> FriendResponse {
-        try await request("friends/\(id)/reject", method: "POST", body: EmptyBody())
+        try await send("friends/\(id)/reject", method: "POST", body: EmptyBody())
     }
 
     func deleteFriend(id: Int) async throws {
@@ -271,7 +273,7 @@ final class APIClient {
             let share_streaks: Bool
             let discoverable_by_contacts: Bool
         }
-        let _: OKResponse = try await request(
+        let _: OKResponse = try await send(
             "profile/privacy",
             method: "POST",
             body: Body(
@@ -297,8 +299,3 @@ struct HeartbeatPayload: Encodable {
     let client_timestamp: String
 }
 
-private struct AnyEncodable: Encodable {
-    let value: Encodable
-    init(_ value: Encodable) { self.value = value }
-    func encode(to encoder: Encoder) throws { try value.encode(to: encoder) }
-}

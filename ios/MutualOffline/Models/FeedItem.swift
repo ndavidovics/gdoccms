@@ -12,6 +12,11 @@ enum FeedItemType: String, Codable {
         let raw = try c.decode(String.self)
         self = FeedItemType(rawValue: raw) ?? .unknown
     }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.singleValueContainer()
+        try c.encode(rawValue)
+    }
 }
 
 enum FeedVisibility: String, Codable {

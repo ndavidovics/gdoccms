@@ -24,6 +24,7 @@ final class AuthStore: ObservableObject {
             let me = try await api.me()
             self.currentUser = me.user
             self.stats = me.stats
+            AuthSnapshot.currentUserId = me.user.id
         } catch APIError.unauthorized {
             await logoutLocal()
         } catch {
@@ -69,6 +70,7 @@ final class AuthStore: ObservableObject {
         keychain.set(token, forKey: KeychainKey.authToken)
         self.token = token
         self.currentUser = user
+        AuthSnapshot.currentUserId = user.id
         Task { await refreshStats() }
     }
 
@@ -77,5 +79,6 @@ final class AuthStore: ObservableObject {
         token = nil
         currentUser = nil
         stats = nil
+        AuthSnapshot.currentUserId = nil
     }
 }

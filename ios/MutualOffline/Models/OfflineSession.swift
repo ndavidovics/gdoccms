@@ -57,30 +57,25 @@ struct OfflineSession: Codable, Identifiable, Hashable {
 struct SessionEvent: Codable, Hashable {
     let id: Int?
     let type: String
-    let payload: [String: AnyCodable]?
     let createdAt: Date?
 
     enum CodingKeys: String, CodingKey {
-        case id, type, payload
+        case id, type
         case createdAt = "created_at"
     }
-}
-
-struct AnyCodable: Codable, Hashable {
-    let value: String
 
     init(from decoder: Decoder) throws {
-        let c = try decoder.singleValueContainer()
-        if let s = try? c.decode(String.self) { value = s }
-        else if let i = try? c.decode(Int.self) { value = String(i) }
-        else if let d = try? c.decode(Double.self) { value = String(d) }
-        else if let b = try? c.decode(Bool.self) { value = String(b) }
-        else { value = "" }
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try c.decodeIfPresent(Int.self, forKey: .id)
+        self.type = try c.decode(String.self, forKey: .type)
+        self.createdAt = try c.decodeIfPresent(Date.self, forKey: .createdAt)
     }
 
     func encode(to encoder: Encoder) throws {
-        var c = encoder.singleValueContainer()
-        try c.encode(value)
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encodeIfPresent(id, forKey: .id)
+        try c.encode(type, forKey: .type)
+        try c.encodeIfPresent(createdAt, forKey: .createdAt)
     }
 }
 
